@@ -113,12 +113,9 @@ void Chip8::decode() {
 void Chip8::run() {
     window->setFramerateLimit(60);
 
-    while (window->isOpen())
-    {
-        while (const std::optional event = window->pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-            {
+    while (window->isOpen()) {
+        while (const std::optional event = window->pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
                 window->close();
             }
         }
