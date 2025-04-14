@@ -1,13 +1,55 @@
 #include "chip8.h"
 #include <iostream>
+#include <fstream>
 
-Chip8::Chip8() {
-    pc = 0x000;
-    memory.write(0x000, 0x7A);
-    memory.write(0x001, 0xE2);
+Chip8::Chip8(sf::RenderWindow& window_) {
+    display.setMemory(memory);
+    window = &window_;
+    gameView = new sf::View(sf::FloatRect({{0, 0}, {WIDTH, HEIGHT}}));
+    window->create(sf::VideoMode({WIDTH*5, HEIGHT*5}), "CHIP8 Interpreter", sf::Style::Close | sf::Style::Titlebar);
+    window->setView(*gameView);
+
+    pc = 0x0;
 }
 
-Chip8::~Chip8() {}
+Chip8::~Chip8() {
+    delete gameView;
+}
+
+void Chip8::loadRom(std::string fileName) {
+    std::ifstream romFile(fileName, std::ios::binary | std::ios::ate);
+    if (!romFile) {
+        std::cout << "File could not be opened" << std::endl;
+    }
+
+    if (romFile.is_open())
+	{
+		// Get size of file and allocate a buffer to hold the contents
+		std::streampos size = romFile.tellg();
+		char* buffer = new char[size];
+
+		// Go back to the beginning of the file and fill the buffer
+		romFile.seekg(0, std::ios::beg);
+		romFile.read(buffer, size);
+		romFile.close();
+
+		// Load the ROM contents into the Chip8's memory, starting at 0x200
+		for (long i = 0; i < size; ++i)
+		{
+			memory.write(0x200 + i, buffer[i]);
+		}
+
+		// Free the buffer
+		delete[] buffer;
+	}
+
+
+    // std::string line;
+
+    // while(std::getline(romFile, line)) {
+    //     std::cout << std::hex << line << std::endl;
+    // }
+}
 
 uint16_t Chip8::fetch() {
     uint8_t inst1 = memory.read(pc);
@@ -25,16 +67,10 @@ void Chip8::decode() {
     uint16_t thirdNibble = (instruction & 0x00F0) >> 4;
     uint16_t fourthNibble = (instruction & 0x000F);
 
-    // std::cout << std::hex << instruction << std::endl;
-    // std::cout << std::hex << firstNibble << std::endl;
-    // std::cout << std::hex << secondNibble << std::endl;
-    // std::cout << std::hex << thirdNibble << std::endl;
-    // std::cout << std::hex << fourthNibble << std::endl;
-
     switch (firstNibble) {
         case 0x0:
             if((instruction & 0x0FFF) == 0x00E0)
-                std::cout << "clear screen!" << std::endl;
+                display.clearScreen();
             break;
         case 0x1:
             pc = (instruction & 0x0FFF);
@@ -52,12 +88,10 @@ void Chip8::decode() {
             break;
         case 0x7:
             V[secondNibble] += (instruction & 0x00FF);
-            std::cout << std::hex << +V[secondNibble] << std::endl;
             break;
         case 0x8:
             break;
         case 0x9:
-            std::cout << "yerrr!" << std::endl;
             break;
         case 0xA:
             ir = (instruction & 0x0FFF);
@@ -67,12 +101,32 @@ void Chip8::decode() {
         case 0xC:
             break;
         case 0xD:
-            
+            display.updateSprite(V, ir, V[secondNibble] % 64, V[thirdNibble] % 32, fourthNibble);
             break;
         case 0xE:
             break;
         case 0xF:
             break;
+    }
+}
+
+void Chip8::run() {
+    window->setFramerateLimit(60);
+
+    while (window->isOpen())
+    {
+        while (const std::optional event = window->pollEvent())
+        {
+            if (event->is<sf::Event::Closed>())
+            {
+                window->close();
+            }
+        }
+        // std::cout << std::hex << pc << std::endl;
+        window->clear();
+        decode();
+        window->draw(*display.getScreenSprite());
+        window->display();
     }
 }
 

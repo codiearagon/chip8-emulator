@@ -1,27 +1,13 @@
-#include <SFML/Graphics.hpp>
 #include "chip8.h"
-
+#include <filesystem>
+#include <iostream>
 
 int main()
 {
-    Chip8 chip8;
-    chip8.decode();
-    
-
-    // auto window = sf::RenderWindow(sf::VideoMode({1280, 720u}), "CMake SFML Project");
-    // window.setFramerateLimit(60);
-
-    // while (window.isOpen())
-    // {
-    //     while (const std::optional event = window.pollEvent())
-    //     {
-    //         if (event->is<sf::Event::Closed>())
-    //         {
-    //             window.close();
-    //         }
-    //     }
-
-    //     window.clear();
-    //     window.display();
-    // }
+    // std::cout << std::filesystem::current_path() << std::endl;
+    sf::RenderWindow window;
+    Chip8 chip8(window);
+    chip8.loadRom("ibmlogo.ch8");
+    chip8.run();
+    // chip8.decode();
 }
