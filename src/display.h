@@ -18,8 +18,9 @@ class Display {
 
         void setMemory(Memory& memory_);
         void updateSprite(uint8_t* V, uint16_t& ir, uint8_t x, uint8_t y, uint8_t height);
-        void togglePixel(uint8_t* V, uint8_t x, uint8_t y);
+        void togglePixel(uint8_t x, uint8_t y);
         void clearScreen();
+        bool isPixelOn(uint8_t x, uint8_t y);
 
     private:
         Memory memory;

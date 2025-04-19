@@ -6,7 +6,7 @@ Chip8::Chip8(sf::RenderWindow& window_) {
     display.setMemory(memory);
     window = &window_;
     gameView = new sf::View(sf::FloatRect({{0, 0}, {WIDTH, HEIGHT}}));
-    window->create(sf::VideoMode({WIDTH*5, HEIGHT*5}), "CHIP8 Interpreter", sf::Style::Close | sf::Style::Titlebar);
+    window->create(sf::VideoMode({WIDTH*10, HEIGHT*10}), "CHIP8 Interpreter", sf::Style::Close | sf::Style::Titlebar);
     window->setView(*gameView);
 
     pc = 0x0;
@@ -62,6 +62,7 @@ uint16_t Chip8::fetch() {
 
 void Chip8::decode() {
     uint16_t instruction = fetch();
+    std::cout << std::hex << instruction << std::dec <<  std::endl;
     uint16_t firstNibble = (instruction & 0xF000) >> 12;
     uint16_t secondNibble = (instruction & 0x0F00) >> 8;
     uint16_t thirdNibble = (instruction & 0x00F0) >> 4;
@@ -101,7 +102,8 @@ void Chip8::decode() {
         case 0xC:
             break;
         case 0xD:
-            display.updateSprite(V, ir, V[secondNibble] % 64, V[thirdNibble] % 32, fourthNibble);
+            display.setMemory(memory);
+            display.updateSprite(V, ir, secondNibble, thirdNibble, fourthNibble);
             break;
         case 0xE:
             break;
